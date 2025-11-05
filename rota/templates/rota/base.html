@@ -7,6 +7,40 @@
     <title>{% block title %}Viação Rota dos Tropeiros{% endblock %}</title>
     <meta name="description" content="{% block description %}Transporte público de qualidade em Castro-PR. Consulte horários, rotas e mapas das linhas urbanas e intermunicipais.{% endblock %}">
     
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" content="{% block keywords %}viação castro pr, ônibus castro, transporte público castro, horários ônibus castro, rotas ônibus castro, viação rota dos tropeiros, transporte coletivo paraná{% endblock %}">
+    <meta name="author" content="Viação Rota dos Tropeiros">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="language" content="Portuguese">
+    <meta name="geo.region" content="BR-PR">
+    <meta name="geo.placename" content="Castro, Paraná">
+    <meta name="geo.position" content="-24.7911;-50.0119">
+    <meta name="ICBM" content="-24.7911, -50.0119">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}Viação Rota dos Tropeiros - Transporte Público em Castro-PR{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Consulte horários, rotas e mapas em tempo real do transporte público de Castro-PR. Viação Rota dos Tropeiros - Conectando pessoas.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'rota/img/og-image.jpg' %}{% endblock %}">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="Viação Rota dos Tropeiros">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{% block twitter_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <meta name="twitter:title" content="{% block twitter_title %}Viação Rota dos Tropeiros - Transporte Público em Castro-PR{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Consulte horários, rotas e mapas em tempo real do transporte público de Castro-PR.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{% static 'rota/img/og-image.jpg' %}{% endblock %}">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical %}{{ request.build_absolute_uri }}{% endblock %}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'rota/img/favicon.ico' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'rota/img/apple-touch-icon.png' %}">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,6 +54,9 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'rota/css/styles.css' %}">
+    
+    <!-- JSON-LD Schema.org -->
+    {% block schema %}{% endblock %}
     
     {% block extra_css %}{% endblock %}
 </head>
