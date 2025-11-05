@@ -23,12 +23,16 @@ def index(request):
     # Gera dados das rotas para o mapa (formato JSON)
     routes_data = generate_routes_data(rotas)
     
+    # Busca TODAS as paradas ativas para mostrar no mapa
+    all_stops_data = get_all_stops()
+    
     context = {
         'rotas': rotas,
         'proximas_partidas': proximas_partidas,
         'total_rotas': total_rotas,
         'total_passageiros': total_passageiros,
         'routes_data': json.dumps(routes_data),
+        'all_stops_data': json.dumps(all_stops_data),
     }
     
     return render(request, 'rota/index.html', context)
@@ -166,3 +170,42 @@ def generate_routes_data(rotas):
         }
     
     return routes_data
+
+
+def get_all_stops():
+    """
+    Retorna TODAS as paradas da cidade para mostrar no mapa,
+    independente de estarem em rotas ativas ou não.
+    """
+    all_stops = []
+    seen_coords = set()  # Para evitar duplicatas no mesmo local
+    
+    paradas = Parada.objects.filter(ativo=True)
+    
+    for parada in paradas:
+        if parada.latitude_longitude:
+            try:
+                coords_str = parada.latitude_longitude.strip()
+                coords_str = coords_str.replace('(', '').replace(')', '')
+                
+                if ',' in coords_str:
+                    lat, lng = coords_str.split(',')
+                else:
+                    lat, lng = coords_str.split()
+                
+                lat = float(lat.strip())
+                lng = float(lng.strip())
+                
+                # Usa coordenadas como chave para evitar duplicatas
+                coord_key = f"{lat:.6f},{lng:.6f}"
+                
+                if coord_key not in seen_coords:
+                    seen_coords.add(coord_key)
+                    all_stops.append({
+                        'name': parada.endereco,
+                        'coords': [lat, lng]
+                    })
+            except (ValueError, AttributeError):
+                pass
+    
+    return all_stops
