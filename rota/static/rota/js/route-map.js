@@ -43,14 +43,14 @@
     const infoBaseMessage = infoElement ? infoElement.textContent : '';
 
     /**
-     * Remove rota atual do mapa
+     * Remove rota atual do mapa com animação suave
      */
     function clearCurrentRoute() {
       if (routePolyline) {
-        map.removeLayer(routePolyline);
+        routePolyline.remove();
         routePolyline = null;
       }
-      stopMarkers.forEach(marker => map.removeLayer(marker));
+      stopMarkers.forEach(marker => marker.remove());
       stopMarkers = [];
     }
 
