@@ -10,6 +10,90 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+"""
+Nota (comentário profissional):
+
+Este arquivo contém a configuração central do projeto Django. Ele controla comportamentos globais
+como idioma, fuso horário, base de dados utilizada, caminhos de arquivos estáticos e parâmetros de
+segurança básicos (por exemplo, `SECRET_KEY` e `DEBUG`).
+
+Público-alvo deste comentário: gestores e colaboradores que não são programadores.
+
+Resumo prático:
+- Alterações aqui afetam todo o site. Modificar `DEBUG`, `SECRET_KEY`, `DATABASES` ou `ALLOWED_HOSTS`
+    pode tornar o site inacessível ou inseguro se feitas incorretamente.
+
+Boas práticas rápidas:
+- Não compartilhe o valor de `SECRET_KEY` em sistemas públicos.
+- Mantenha `DEBUG = False` em ambientes de produção.
+- Antes de mudar o banco de dados (SQLite → outro), coordene com o time técnico.
+
+Sequência recomendada para editar configurações (ordem segura):
+1) Ajuste `DEBUG` apenas em conjunto com o time (desenvolvimento vs produção).
+2) Configure `ALLOWED_HOSTS` antes de tornar o site acessível publicamente.
+3) Revise `CSRF_TRUSTED_ORIGINS` ao habilitar domínios externos/formulários.
+4) Para mudanças de banco, prepare migrações e backup do `db.sqlite3`.
+
+Este comentário é informativo; as linhas seguintes contêm o código que o Django usa diretamente.
+"""
+
+"""
+Guia rápido de deploy com Apache (mod_wsgi) — linguagem para não-programadores
+
+Resumo: abaixo há uma sequência mínima e segura para colocar este projeto Django rodando em um servidor
+Apache usando o módulo mod_wsgi. Essas instruções supõem que você tem acesso ao servidor (por SSH) e
+permissão para instalar pacotes e configurar o Apache.
+
+Passos essenciais (alto nível):
+1) Preparar o servidor
+    - Instalar Python (compatível com a versão usada no projeto), pip e virtualenv/venv.
+    - Instalar o Apache HTTP Server.
+
+2) Criar um ambiente isolado Python
+    - No servidor, crie um diretório para o projeto e um virtualenv (ex.: `python3 -m venv venv`).
+    - Ative o virtualenv e instale as dependências do projeto (ex.: `pip install -r requirements.txt`).
+
+3) Ajustar configurações do Django para produção
+    - `DEBUG = False` no arquivo `core/settings.py` ou via variável de ambiente.
+    - Mover `SECRET_KEY` para uma variável de ambiente do servidor (nunca deixar no código).
+    - Definir `ALLOWED_HOSTS` para o(s) domínio(s) do site (ex.: `['meusite.com', 'www.meusite.com']`).
+    - Configurar `DATABASES` se for usar outro banco que não seja o SQLite (ex.: Postgres).
+
+4) Coletar arquivos estáticos e aplicar migrações
+    - `python manage.py collectstatic` (copia CSS/JS/imagens para a pasta servida pelo Apache)
+    - `python manage.py migrate` (aplica alterações no esquema do banco)
+
+5) Configurar o Apache com mod_wsgi
+    - Instalar mod_wsgi (no Ubuntu: `apt install libapache2-mod-wsgi-py3`) ou instalar via pip e compilar
+      dependendo da configuração.
+    - Criar um arquivo de configuração do site Apache (ex.: `/etc/apache2/sites-available/rota.conf`) com
+      instruções que apontem para o WSGI do projeto. Exemplo (resumo, peça ao time técnico para validar):
+
+      - Definir `ServerName` para seu domínio.
+      - Apontar `DocumentRoot` para o diretório `static/` (ou configurar um alias para os arquivos estáticos).
+      - Incluir uma diretiva `WSGIDaemonProcess` com o caminho do virtualenv e `WSGIProcessGroup`.
+      - Apontar `WSGIScriptAlias` para o arquivo `wsgi.py` do projeto (geralmente `core/wsgi.py`).
+
+6) Permissões e donos
+    - Garantir que o usuário do Apache (ex.: `www-data` no Ubuntu) tenha permissão de leitura no projeto
+      e acesso ao diretório do virtualenv. Para arquivos que precisam de escrita (logs, uploads), defina
+      permissões apropriadas (diretório seguro para uploads com dono do Apache).
+
+7) Reiniciar Apache e validar
+    - Habilitar o site (`a2ensite rota.conf`) e reiniciar o Apache (`systemctl restart apache2`).
+    - Verificar logs (`/var/log/apache2/error.log` e `access.log`) caso algo falhe.
+
+Dicas de segurança (não-técnicas)
+- Nunca exponha `SECRET_KEY` nem credenciais no repositório. Use variáveis de ambiente ou um gerenciador de
+  segredos.
+- Mantenha `DEBUG = False` em produção; caso contrário, mensagens de erro podem expor dados sensíveis.
+
+Observação final para não-programadores
+- Se preferir, peça ao time técnico um roteiro pronto com os comandos exatos para o servidor que vocês usam
+  (por exemplo, Ubuntu 24.04). Esta seção deve ser seguida por um profissional ou técnico responsável pelo
+  servidor para evitar queda de serviço.
+"""
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -54,12 +138,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rota"
+    "rota.apps.RotaConfig",  # Configurado para usar verbose_name
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",  # Internacionalização
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -120,13 +205,20 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "pt-br"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/Sao_Paulo"
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
+
+# Locale paths para traduções customizadas
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
 
 
 # Static files (CSS, JavaScript, Images)
