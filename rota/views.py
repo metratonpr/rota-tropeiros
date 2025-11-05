@@ -95,11 +95,14 @@ def generate_routes_data(rotas):
         if not horarios.exists():
             continue
         
+        # Converte QuerySet para lista para permitir indexação negativa
+        horarios_list = list(horarios)
+        
         # Extrai coordenadas das paradas
         stops = []
         path = []
         
-        for horario in horarios:
+        for horario in horarios_list:
             parada = horario.parada
             
             # Tenta extrair latitude e longitude do campo latitude_longitude
@@ -141,19 +144,19 @@ def generate_routes_data(rotas):
             ]
             stops = [
                 {
-                    'name': horarios[0].parada.endereco if horarios else 'Início',
+                    'name': horarios_list[0].parada.endereco if horarios_list else 'Início',
                     'description': 'Parada inicial',
                     'coords': path[0]
                 },
                 {
-                    'name': horarios[-1].parada.endereco if len(horarios) > 1 else 'Fim',
+                    'name': horarios_list[-1].parada.endereco if len(horarios_list) > 1 else 'Fim',
                     'description': 'Parada final',
                     'coords': path[-1]
                 }
             ]
         
-        primeira_parada = horarios[0].parada.endereco if horarios else ''
-        ultima_parada = horarios[-1].parada.endereco if len(horarios) > 1 else ''
+        primeira_parada = horarios_list[0].parada.endereco if horarios_list else ''
+        ultima_parada = horarios_list[-1].parada.endereco if len(horarios_list) > 1 else ''
         
         routes_data[f'linha{rota.id}'] = {
             'label': rota.nome,
