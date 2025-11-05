@@ -118,13 +118,26 @@
       }
     }
 
-    // Event listener para mudança de abas
+    // Event listener para mudança de abas (evento do Bootstrap)
     document.querySelectorAll('#lineTabs .nav-link[data-route]').forEach(button => {
+      // Evento do Bootstrap quando a tab é exibida
       button.addEventListener('shown.bs.tab', event => {
-        const { route } = event.target.dataset;
-        loadRoute(route);
+        const routeId = event.target.dataset.route;
+        console.log('Tab shown (Bootstrap event):', routeId);
+        loadRoute(routeId);
+      });
+      
+      // Fallback: também escuta cliques diretos
+      button.addEventListener('click', event => {
+        const routeId = event.currentTarget.dataset.route;
+        console.log('Tab clicked:', routeId);
+        // Pequeno delay para garantir que o Bootstrap processou primeiro
+        setTimeout(() => loadRoute(routeId), 100);
       });
     });
+
+    console.log('Mapa inicializado. Rotas disponíveis:', Object.keys(routesData));
+    console.log('Event listeners adicionados a', document.querySelectorAll('#lineTabs .nav-link[data-route]').length, 'botões');
   }
 
   /**
