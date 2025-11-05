@@ -6,8 +6,7 @@
 {% block description %}Transporte público em Castro-PR. Consulte horários, rotas urbanas e intermunicipais, mapa interativo e informações das paradas.{% endblock %}
 
 {% block leaflet_css %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-      integrity="sha256-sA+rq9qjVA/4G3djeU11GpP23Z4RzP2cHl0JYfPp3p8=" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css?v=2" crossorigin="">
 {% endblock %}
 
 {% block content %}
@@ -20,14 +19,15 @@
 {% endblock %}
 
 {% block leaflet_js %}
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-        integrity="sha256-m0Rvr2zbZG32zBnZBLEb1Jr94Q0bA2d1Sz6HtF0aoNU=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js?v=2" crossorigin=""></script>
 {% endblock %}
 
 {% block extra_js %}
 <script>
     // Dados das rotas injetados do backend
     window.ROUTES_DATA = {{ routes_data|safe }};
+    // TODAS as paradas da cidade
+    window.ALL_STOPS = {{ all_stops_data|safe }};
 </script>
-<script src="{% static 'rota/js/route-map.js' %}"></script>
+<script src="{% static 'rota/js/route-map.js' %}?v=4"></script>
 {% endblock %}
