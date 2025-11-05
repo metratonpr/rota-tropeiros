@@ -1,0 +1,33 @@
+{% extends 'rota/base.html' %}
+{% load static %}
+
+{% block title %}Viação Metropolitana - Rotas e Horários{% endblock %}
+
+{% block description %}Sistema inteligente de mobilidade urbana com horários em tempo real, mapa de rotas e informações de paradas.{% endblock %}
+
+{% block leaflet_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-sA+rq9qjVA/4G3djeU11GpP23Z4RzP2cHl0JYfPp3p8=" crossorigin="">
+{% endblock %}
+
+{% block content %}
+    {% include 'rota/components/hero.html' %}
+    {% include 'rota/components/servicos.html' %}
+    {% include 'rota/components/horarios.html' %}
+    {% include 'rota/components/mapa.html' %}
+    {% include 'rota/components/estatisticas.html' %}
+    {% include 'rota/components/contato.html' %}
+{% endblock %}
+
+{% block leaflet_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-m0Rvr2zbZG32zBnZBLEb1Jr94Q0bA2d1Sz6HtF0aoNU=" crossorigin=""></script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dados das rotas injetados do backend
+    window.ROUTES_DATA = {{ routes_data|safe }};
+</script>
+<script src="{% static 'rota/js/route-map.js' %}"></script>
+{% endblock %}
