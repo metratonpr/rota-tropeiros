@@ -1,10 +1,13 @@
 /**
- * Viação Metropolitana - Route Map Module
+ * Viação Rota dos Tropeiros - Route Map Module
  * Gerencia o mapa interativo de rotas usando Leaflet
  */
 
 (function() {
   'use strict';
+
+  // Coordenadas de Castro-PR (centro da cidade)
+  const CASTRO_CENTER = [-24.7911, -50.0119];
 
   /**
    * Inicializa o mapa de rotas
@@ -19,16 +22,19 @@
     // Dados das rotas - em produção, buscar do backend via API
     const routesData = window.ROUTES_DATA || getDefaultRoutesData();
 
-    // Inicializa o mapa
+    // Inicializa o mapa centralizado em Castro-PR
     const map = L.map('routeMap', {
+      center: CASTRO_CENTER,
+      zoom: 13,
       scrollWheelZoom: false,
-      minZoom: 11
+      minZoom: 11,
+      maxZoom: 18
     });
 
-    // Adiciona camada de tiles
+    // Adiciona camada de tiles do OpenStreetMap (gratuito)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
-      attribution: '&copy; OpenStreetMap contributors'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     let routePolyline = null;
@@ -86,21 +92,31 @@
       // Ajusta o zoom para mostrar toda a rota
       const bounds = routePolyline.getBounds();
       if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [24, 24] });
+        map.fitBounds(bounds, { padding: [30, 30] });
       } else {
-        map.setView(route.path[0], 13);
+        // Se não houver bounds válidos, centraliza em Castro
+        map.setView(CASTRO_CENTER, 13);
       }
 
       // Atualiza informações
       if (infoElement) {
-        infoElement.textContent = `${infoBaseMessage} Rota ativa: ${route.label} — ${route.description}. ${route.stops.length} paradas georreferenciadas.`;
+        const baseMsg = 'Mapa das rotas em Castro-PR.';
+        infoElement.textContent = `${baseMsg} Rota ativa: ${route.label} — ${route.description}. ${route.stops.length} paradas.`;
       }
     }
 
-    // Carrega rota inicial
+    // Carrega rota inicial ou mostra mapa de Castro
     const activeButton = document.querySelector('#lineTabs .nav-link.active[data-route]');
-    const initialRouteId = activeButton ? activeButton.dataset.route : Object.keys(routesData)[0];
-    loadRoute(initialRouteId);
+    if (activeButton && Object.keys(routesData).length > 0) {
+      const initialRouteId = activeButton.dataset.route || Object.keys(routesData)[0];
+      loadRoute(initialRouteId);
+    } else {
+      // Se não há rotas, apenas mostra o mapa de Castro
+      map.setView(CASTRO_CENTER, 13);
+      if (infoElement) {
+        infoElement.textContent = 'Mapa de Castro-PR. Selecione uma linha para ver o trajeto.';
+      }
+    }
 
     // Event listener para mudança de abas
     document.querySelectorAll('#lineTabs .nav-link[data-route]').forEach(button => {
@@ -112,40 +128,33 @@
   }
 
   /**
-   * Retorna dados padrão das rotas (fallback)
+   * Retorna dados padrão das rotas para Castro-PR (fallback)
    */
   function getDefaultRoutesData() {
     return {
-      linha410: {
-        label: 'Linha 410',
-        description: 'Terminal Verde Vida → Parque Atlântico',
+      linha1: {
+        label: 'Linha Centro',
+        description: 'Centro → Bairros',
         path: [
-          [-23.5615, -46.6559],
-          [-23.5601, -46.6502],
-          [-23.558, -46.6438],
-          [-23.5532, -46.6365],
-          [-23.5489, -46.6291]
+          [-24.7911, -50.0119], // Centro de Castro
+          [-24.7850, -50.0100],
+          [-24.7800, -50.0080]
         ],
         stops: [
           {
-            name: 'Terminal Verde Vida',
-            description: 'Integração com metrô Linha Verde e bicicletário seguro.',
-            coords: [-23.5615, -46.6559]
+            name: 'Terminal Central',
+            description: 'Ponto de partida no centro de Castro.',
+            coords: [-24.7911, -50.0119]
           },
           {
-            name: 'Jardim Primavera',
-            description: 'Corredor exclusivo com embarque preferencial.',
-            coords: [-23.5589, -46.6457]
+            name: 'Praça Getúlio Vargas',
+            description: 'Parada próxima à praça central.',
+            coords: [-24.7850, -50.0100]
           },
           {
-            name: 'Hub Intermodal Central',
-            description: 'Conexão com VLT e linhas intermunicipais.',
-            coords: [-23.5556, -46.6399]
-          },
-          {
-            name: 'Parque Atlântico',
-            description: 'Ponto final próximo ao centro cultural e área verde.',
-            coords: [-23.5489, -46.6291]
+            name: 'Bairro',
+            description: 'Parada em bairro residencial.',
+            coords: [-24.7800, -50.0080]
           }
         ]
       }
