@@ -27,7 +27,7 @@ from django.contrib import admin
 from .models import Rota, Parada, RotaParadaHorario
 
 # Configuração do Admin em Português
-admin.site.site_header = "Viação Rota dos Tropeiros - Administração"
+admin.site.site-_header = "Viação Rota dos Tropeiros - Administração"
 admin.site.site_title = "Admin Rota dos Tropeiros"
 admin.site.index_title = "Painel de Controle"
 
