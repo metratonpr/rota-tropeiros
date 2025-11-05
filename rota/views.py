@@ -18,7 +18,7 @@ def index(request):
     
     # Estatísticas
     total_rotas = rotas.count()
-    total_passageiros = "140 mil"  # Pode vir de um modelo de estatísticas
+    total_passageiros = "2 mil"  # Passageiros diários em Castro
     
     # Gera dados das rotas para o mapa (formato JSON)
     routes_data = generate_routes_data(rotas)
@@ -131,16 +131,16 @@ def generate_routes_data(rotas):
                         'coords': coords
                     })
                 except (ValueError, AttributeError):
-                    # Se não conseguir parsear, usa coordenadas padrão de São Paulo
+                    # Se não conseguir parsear, ignora e usa coordenadas padrão depois
                     pass
         
-        # Se não tiver coordenadas válidas, usa dados de exemplo
+        # Se não tiver coordenadas válidas, usa dados de exemplo de Castro-PR
         if not path:
-            # Coordenadas de exemplo (região de São Paulo)
+            # Coordenadas de exemplo (região central de Castro-PR)
             path = [
-                [-23.5615, -46.6559],
-                [-23.5589, -46.6457],
-                [-23.5556, -46.6399],
+                [-24.7911, -50.0119],  # Centro de Castro
+                [-24.7850, -50.0100],  # Proximidades
+                [-24.7800, -50.0080],  # Bairro
             ]
             stops = [
                 {
