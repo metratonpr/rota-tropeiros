@@ -1,4 +1,3 @@
-# ...existing code...
 from django.contrib import admin
 from .models import Rota, Parada, RotaParadaHorario
 
