@@ -1,0 +1,24 @@
+<header class="hero py-5 py-lg-6">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <span class="badge-line mb-4 d-inline-flex align-items-center gap-2">
+                    <span class="d-inline-block rounded-pill" style="width: 10px; height: 10px; background-color: var(--vm-white);"></span>
+                    Mobilidade sustentável e conectada
+                </span>
+                <h1 class="display-5 mb-4">Horários confiáveis e tecnologia para planejar cada deslocamento.</h1>
+                <p class="lead mb-4">
+                    Sistema inteligente de mobilidade urbana com foco em agilidade,
+                    transparência e integração em tempo real com o mapa das rotas urbanas.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a class="btn btn-light btn-lg px-4" href="#horarios">Ver horários</a>
+                    <a class="btn btn-outline-light btn-lg px-4" href="#rota">Acompanhar rota</a>
+                </div>
+            </div>
+            <div class="col-lg-5 offset-lg-1">
+                {% include 'rota/components/proximas-partidas.html' %}
+            </div>
+        </div>
+    </div>
+</header>

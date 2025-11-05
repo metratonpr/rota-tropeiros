@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Viação Metropolitana — Modelo 2</title>
+    <meta name="description" content="Modelo 2 da Viação Metropolitana com foco em mobilidade urbana, horários e mapa de rotas.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-sA+rq9qjVA/4G3djeU11GpP23Z4RzP2cHl0JYfPp3p8=" crossorigin="">
+    <style>
+      :root {
+        --vm-primary: #2f9c5c;
+        --vm-white: #ffffff;
+        --vm-blue: #155f9c;
+        --vm-dark: #0d1722;
+        --vm-light: #f7faf8;
+        --vm-muted: #5b6a76;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: var(--vm-dark);
+        background-color: var(--vm-light);
+      }
+
+      .navbar {
+        background-color: var(--vm-white);
+      }
+
+      .navbar-brand {
+        color: var(--vm-primary);
+      }
+
+      .navbar-brand span {
+        color: var(--vm-blue);
+      }
+
+      .nav-link.active {
+        color: var(--vm-primary) !important;
+      }
+
+      .hero {
+        background: linear-gradient(135deg, rgba(47, 156, 92, 0.95), rgba(21, 95, 156, 0.85));
+        color: var(--vm-white);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: url("https://www.transparenttextures.com/patterns/diagonal-stripes.png");
+        opacity: 0.08;
+        pointer-events: none;
+      }
+
+      .hero h1 {
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .floating-card {
+        border-radius: 1.25rem;
+        box-shadow: 0 18px 45px rgba(13, 23, 34, 0.16);
+        background-color: var(--vm-white);
+      }
+
+      .floating-card .badge {
+        font-size: 0.85rem;
+      }
+
+      .badge-line {
+        background-color: rgba(255, 255, 255, 0.18);
+        color: var(--vm-white);
+        border-radius: 999px;
+        padding: 0.4rem 1rem;
+        font-weight: 500;
+      }
+
+      .section-title {
+        color: var(--vm-dark);
+      }
+
+      .section-subtitle {
+        color: var(--vm-muted);
+        max-width: 600px;
+      }
+
+      .service-card {
+        border-radius: 1.25rem;
+        background-color: var(--vm-white);
+        border: none;
+        box-shadow: 0 10px 30px rgba(13, 23, 34, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .service-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 18px 40px rgba(13, 23, 34, 0.12);
+      }
+
+      .service-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        background-color: rgba(47, 156, 92, 0.12);
+        color: var(--vm-primary);
+        font-weight: 600;
+      }
+
+      .schedule-card {
+        border: 1px solid rgba(13, 23, 34, 0.08);
+        border-radius: 1.25rem;
+        background-color: var(--vm-white);
+      }
+
+      .schedule-tabs .nav-link {
+        color: var(--vm-muted);
+        font-weight: 500;
+      }
+
+      .schedule-tabs .nav-link.active {
+        color: var(--vm-primary);
+        border-bottom: 2px solid var(--vm-primary);
+        background-color: transparent;
+      }
+
+      .callout {
+        border-left: 4px solid var(--vm-primary);
+        background: rgba(47, 156, 92, 0.08);
+        border-radius: 1.25rem;
+      }
+
+      #routeMap {
+        width: 100%;
+        height: 320px;
+        border-radius: 1.25rem;
+        border: 1px solid rgba(13, 23, 34, 0.12);
+        overflow: hidden;
+      }
+
+      .footer {
+        background: var(--vm-dark);
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .footer a {
+        color: rgba(255, 255, 255, 0.82);
+        text-decoration: none;
+      }
+
+      @media (max-width: 991.98px) {
+        .hero {
+          text-align: center;
+        }
+
+        .floating-card {
+          margin-top: 2.5rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg py-3 shadow-sm sticky-top">
+      <div class="container">
+        <a class="navbar-brand fw-semibold text-uppercase" href="#">
+          Viação <span>Metropolitana</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir navegação">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul class="navbar-nav gap-lg-4">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#horarios">Horários</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#servicos">Serviços</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#rota">Mapa da Rota</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#contato">Contato</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <header class="hero py-5 py-lg-6">
+      <div class="container position-relative">
+        <div class="row align-items-center">
+          <div class="col-lg-6">
+            <span class="badge-line mb-4 d-inline-flex align-items-center gap-2">
+              <span class="d-inline-block rounded-pill" style="width: 10px; height: 10px; background-color: var(--vm-white);"></span>
+              Mobilidade sustentável e conectada
+            </span>
+            <h1 class="display-5 mb-4">Horários confiáveis e tecnologia para planejar cada deslocamento.</h1>
+            <p class="lead mb-4">
+              O Modelo 2 da Viação Metropolitana entrega uma experiência mobile-first com foco em agilidade,
+              transparência e integração em tempo real com o mapa das rotas urbanas.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+              <a class="btn btn-light btn-lg px-4" href="#horarios">Ver horários</a>
+              <a class="btn btn-outline-light btn-lg px-4" href="#rota">Acompanhar rota</a>
+            </div>
+          </div>
+          <div class="col-lg-5 offset-lg-1">
+            <div class="floating-card p-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-uppercase text-muted fw-semibold">Próximas partidas</span>
+                <span class="badge text-bg-success-subtle text-success">Atualizado agora</span>
+              </div>
+              <div class="list-group list-group-flush">
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                  <div>
+                    <h6 class="mb-0 fw-semibold text-uppercase text-muted">Linha 410</h6>
+                    <p class="mb-0 small text-muted">Terminal Verde Vida → Parque Atlântico</p>
+                  </div>
+                  <span class="badge rounded-pill bg-success-subtle text-success fw-semibold">08:14</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                  <div>
+                    <h6 class="mb-0 fw-semibold text-uppercase text-muted">Linha 128</h6>
+                    <p class="mb-0 small text-muted">Jardim Horizonte → Centro Integrado</p>
+                  </div>
+                  <span class="badge rounded-pill bg-primary-subtle text-primary fw-semibold">08:22</span>
+                </div>
+                <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                  <div>
+                    <h6 class="mb-0 fw-semibold text-uppercase text-muted">Linha 520</h6>
+                    <p class="mb-0 small text-muted">Campus Norte → Bairro Solar</p>
+                  </div>
+                  <span class="badge rounded-pill bg-info-subtle text-info fw-semibold">08:30</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="servicos" class="py-5">
+      <div class="container">
+        <div class="row align-items-center mb-5">
+          <div class="col-lg-7">
+            <h2 class="section-title fw-semibold mb-3">Serviços integrados para uma mobilidade urbana inteligente.</h2>
+            <p class="section-subtitle mb-0">
+              Equilibramos monitoramento em tempo real, atendimento omnichannel e análise preditiva para reduzir tempo de espera e melhorar a experiência do passageiro.
+            </p>
+          </div>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="card service-card h-100 p-4">
+              <div class="service-icon mb-4">IoT</div>
+              <h5 class="fw-semibold">Telemetria inteligente</h5>
+              <p class="text-muted mb-0">
+                Sensores embarcados conectados à central operacional garantem leitura contínua do desempenho das linhas e antecipam ajustes.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card service-card h-100 p-4">
+              <div class="service-icon mb-4">App</div>
+              <h5 class="fw-semibold">Aplicativo mobile-first</h5>
+              <p class="text-muted mb-0">
+                Planeje viagens, salve paradas preferidas e receba alertas de chegada com interface otimizada para dispositivos móveis.
+              </p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card service-card h-100 p-4">
+              <div class="service-icon mb-4">AI</div>
+              <h5 class="fw-semibold">Previsão de demanda</h5>
+              <p class="text-muted mb-0">
+                Algoritmos de previsão ajustam a frota nas janelas de maior fluxo, garantindo regularidade e menor tempo de espera.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="horarios" class="py-5 bg-white">
+      <div class="container">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start mb-4">
+          <div>
+            <h2 class="section-title fw-semibold mb-2">Horários por linha</h2>
+            <p class="section-subtitle mb-0">Selecione a linha desejada para consultar paradas estratégicas, horários previstos e intervalos médios.</p>
+          </div>
+          <a class="btn btn-outline-primary mt-3 mt-lg-0" href="#contato">Solicitar linha adicional</a>
+        </div>
+        <ul class="nav nav-underline schedule-tabs mb-4" id="lineTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-410" data-bs-toggle="tab" data-bs-target="#linha410" type="button" role="tab" aria-controls="linha410" aria-selected="true" data-route="linha410">Linha 410</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-128" data-bs-toggle="tab" data-bs-target="#linha128" type="button" role="tab" aria-controls="linha128" aria-selected="false" data-route="linha128">Linha 128</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-520" data-bs-toggle="tab" data-bs-target="#linha520" type="button" role="tab" aria-controls="linha520" aria-selected="false" data-route="linha520">Linha 520</button>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="linha410" role="tabpanel" aria-labelledby="tab-410">
+            <div class="schedule-card p-4">
+              <h5 class="fw-semibold mb-3" style="color: var(--vm-primary);">Terminal Verde Vida → Parque Atlântico</h5>
+              <div class="row g-4">
+                <div class="col-lg-6">
+                  <table class="table align-middle mb-0">
+                    <thead>
+                      <tr>
+                        <th scope="col">Parada</th>
+                        <th scope="col">Próximo</th>
+                        <th scope="col">Seguinte</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Terminal Verde Vida</td>
+                        <td>05:40</td>
+                        <td>06:00</td>
+                      </tr>
+                      <tr>
+                        <td>Jardim Primavera</td>
+                        <td>05:48</td>
+                        <td>06:08</td>
+                      </tr>
+                      <tr>
+                        <td>Hub Intermodal Central</td>
+                        <td>05:57</td>
+                        <td>06:17</td>
+                      </tr>
+                      <tr>
+                        <td>Parque Atlântico</td>
+                        <td>06:10</td>
+                        <td>06:30</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-lg-6">
+                  <div class="callout p-4 h-100">
+                    <h6 class="text-uppercase text-muted">Atenção</h6>
+                    <p class="fw-semibold mb-2">Faixa exclusiva ativa das 6h às 9h na Avenida Botânica com monitoramento de velocidade.</p>
+                    <p class="text-muted mb-0">Segunda a sexta a linha recebe reforço com intervalos médios de 12 minutos nos horários de pico.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="linha128" role="tabpanel" aria-labelledby="tab-128">
+            <div class="schedule-card p-4">
+              <h5 class="fw-semibold mb-3" style="color: var(--vm-primary);">Jardim Horizonte → Centro Integrado</h5>
+              <table class="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">Parada</th>
+                    <th scope="col">Próximo</th>
+                    <th scope="col">Seguinte</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Jardim Horizonte</td>
+                    <td>05:20</td>
+                    <td>05:40</td>
+                  </tr>
+                  <tr>
+                    <td>Avenida Solar</td>
+                    <td>05:31</td>
+                    <td>05:51</td>
+                  </tr>
+                  <tr>
+                    <td>Estação Linha Azul</td>
+                    <td>05:42</td>
+                    <td>06:02</td>
+                  </tr>
+                  <tr>
+                    <td>Centro Integrado</td>
+                    <td>05:55</td>
+                    <td>06:15</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="linha520" role="tabpanel" aria-labelledby="tab-520">
+            <div class="schedule-card p-4">
+              <h5 class="fw-semibold mb-3" style="color: var(--vm-primary);">Campus Norte → Bairro Solar</h5>
+              <table class="table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">Parada</th>
+                    <th scope="col">Próximo</th>
+                    <th scope="col">Seguinte</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Campus Norte</td>
+                    <td>05:10</td>
+                    <td>05:30</td>
+                  </tr>
+                  <tr>
+                    <td>Laboratórios Integrados</td>
+                    <td>05:18</td>
+                    <td>05:38</td>
+                  </tr>
+                  <tr>
+                    <td>Terminal Azul</td>
+                    <td>05:30</td>
+                    <td>05:50</td>
+                  </tr>
+                  <tr>
+                    <td>Bairro Solar</td>
+                    <td>05:44</td>
+                    <td>06:04</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="rota" class="py-5">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-5">
+            <h2 class="section-title fw-semibold mb-3">Mapa interativo das rotas</h2>
+            <p class="section-subtitle mb-4">
+              Visualize o traçado em tempo real das linhas urbanas. O mapa integra dados abertos de mobilidade e permite alternar entre camadas Google Maps ou OpenStreetMap.
+            </p>
+            <ul class="list-unstyled text-muted mb-4">
+              <li class="mb-2">- Selecione a linha desejada para destacar o percurso no mapa.</li>
+              <li class="mb-2">- Consulte pontos de parada, horários previstos e alertas de bloqueio.</li>
+              <li>- Personalize o estilo do mapa com Tiles Google ou OpenStreet conforme disponibilidade.</li>
+            </ul>
+            <a class="btn btn-primary" href="#contato">Solicitar chave de acesso</a>
+          </div>
+          <div class="col-lg-7">
+            <div id="routeMap"></div>
+            <small id="routeMapInfo" class="d-block text-muted mt-2">
+              Integração demonstrativa com Leaflet (OpenStreetMap). O traçado e os pontos são atualizados automaticamente conforme a linha selecionada nas abas. Substitua a fonte de tiles ou inicialização pela API oficial do Google Maps quando a chave estiver configurada.
+            </small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-5 bg-white">
+      <div class="container">
+        <div class="row g-4 align-items-center">
+          <div class="col-lg-5">
+            <div class="callout p-4">
+              <h5 class="fw-semibold mb-3" style="color: var(--vm-primary);">Operação monitorada 24/7</h5>
+              <p class="text-muted mb-0">
+                Camadas operacionais acompanhadas em tempo real por analistas dedicados, garantindo regularidade e resposta rápida a incidentes.
+              </p>
+            </div>
+          </div>
+          <div class="col-lg-7">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                  <div class="card-body">
+                    <span class="badge text-bg-success-subtle text-success fw-semibold mb-2">98% pontualidade</span>
+                    <p class="mb-0 text-muted">Indicador médio em dias úteis com monitoramento contínuo de viagens.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                  <div class="card-body">
+                    <span class="badge text-bg-primary-subtle text-primary fw-semibold mb-2">+140 mil passageiros</span>
+                    <p class="mb-0 text-muted">Transportados semanalmente com foco em conforto e estabilidade.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                  <div class="card-body">
+                    <span class="badge text-bg-info-subtle text-info fw-semibold mb-2">12 linhas integradas</span>
+                    <p class="mb-0 text-muted">Rede urbana conectada a ciclovias, VLT e estações de metrô.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contato" class="py-5">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-7">
+            <div class="text-center mb-4">
+              <h2 class="section-title fw-semibold">Converse com a equipe</h2>
+              <p class="section-subtitle mb-0">Retornamos solicitações operacionais ou comerciais em até 24 horas úteis.</p>
+            </div>
+            <form class="row g-3">
+              <div class="col-md-6">
+                <label for="nome" class="form-label">Nome completo</label>
+                <input type="text" class="form-control" id="nome" placeholder="Seu nome">
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label">E-mail</label>
+                <input type="email" class="form-control" id="email" placeholder="nome@empresa.com">
+              </div>
+              <div class="col-12">
+                <label for="assunto" class="form-label">Assunto</label>
+                <select id="assunto" class="form-select">
+                  <option selected>Selecione...</option>
+                  <option value="operacional">Operacional</option>
+                  <option value="parcerias">Parcerias</option>
+                  <option value="imprensa">Imprensa</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label for="mensagem" class="form-label">Mensagem</label>
+                <textarea class="form-control" id="mensagem" rows="4" placeholder="Como podemos apoiar sua operação?"></textarea>
+              </div>
+              <div class="col-12 d-grid d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary px-4">Enviar mensagem</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer py-4">
+      <div class="container">
+        <div class="row align-items-center gy-3">
+          <div class="col-lg-6">
+            <span class="fw-semibold">Viação Metropolitana</span>
+            <span class="mx-2">|</span>
+            <span>Mobilidade urbana sustentável com foco em eficiência.</span>
+          </div>
+          <div class="col-lg-6 text-lg-end">
+            <a href="tel:08001234567" class="me-3">0800 123 4567</a>
+            <a href="mailto:contato@viacaometropolitana.com">contato@viacaometropolitana.com</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-m0Rvr2zbZG32zBnZBLEb1Jr94Q0bA2d1Sz6HtF0aoNU=" crossorigin=""></script>
+    <script>
+      function initRouteMap() {
+        const routesData = {
+          linha410: {
+            label: "Linha 410",
+            description: "Terminal Verde Vida → Parque Atlântico",
+            path: [
+              [-23.5615, -46.6559],
+              [-23.5601, -46.6502],
+              [-23.558, -46.6438],
+              [-23.5532, -46.6365],
+              [-23.5489, -46.6291]
+            ],
+            stops: [
+              {
+                name: "Terminal Verde Vida",
+                description: "Integração com metrô Linha Verde e bicicletário seguro.",
+                coords: [-23.5615, -46.6559]
+              },
+              {
+                name: "Jardim Primavera",
+                description: "Corredor exclusivo com embarque preferencial.",
+                coords: [-23.5589, -46.6457]
+              },
+              {
+                name: "Hub Intermodal Central",
+                description: "Conexão com VLT e linhas intermunicipais.",
+                coords: [-23.5556, -46.6399]
+              },
+              {
+                name: "Parque Atlântico",
+                description: "Ponto final próximo ao centro cultural e área verde.",
+                coords: [-23.5489, -46.6291]
+              }
+            ]
+          },
+          linha128: {
+            label: "Linha 128",
+            description: "Jardim Horizonte → Centro Integrado",
+            path: [
+              [-23.5838, -46.6662],
+              [-23.5795, -46.6578],
+              [-23.5732, -46.6505],
+              [-23.5663, -46.6419]
+            ],
+            stops: [
+              {
+                name: "Jardim Horizonte",
+                description: "Terminal com wi-fi gratuito e painéis de LED.",
+                coords: [-23.5838, -46.6662]
+              },
+              {
+                name: "Avenida Solar",
+                description: "Parada com integração a ciclovia estrutural.",
+                coords: [-23.5795, -46.6578]
+              },
+              {
+                name: "Estação Linha Azul",
+                description: "Integração direta com metrô e trem metropolitano.",
+                coords: [-23.5732, -46.6505]
+              },
+              {
+                name: "Centro Integrado",
+                description: "Terminal empresarial com plataformas cobertas.",
+                coords: [-23.5663, -46.6419]
+              }
+            ]
+          },
+          linha520: {
+            label: "Linha 520",
+            description: "Campus Norte → Bairro Solar",
+            path: [
+              [-23.5462, -46.697],
+              [-23.5411, -46.688],
+              [-23.538, -46.676],
+              [-23.533, -46.667]
+            ],
+            stops: [
+              {
+                name: "Campus Norte",
+                description: "Ponto inicial com integração às linhas universitárias circulares.",
+                coords: [-23.5462, -46.697]
+              },
+              {
+                name: "Laboratórios Integrados",
+                description: "Atende polos de pesquisa e incubadoras tecnológicas.",
+                coords: [-23.5411, -46.688]
+              },
+              {
+                name: "Terminal Azul",
+                description: "Conexão com linhas alimentadoras de bairros adjacentes.",
+                coords: [-23.538, -46.676]
+              },
+              {
+                name: "Bairro Solar",
+                description: "Ponto final em área residencial com comércio local.",
+                coords: [-23.533, -46.667]
+              }
+            ]
+          }
+        };
+
+        const map = L.map("routeMap", {
+          scrollWheelZoom: false,
+          minZoom: 11
+        });
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 18,
+          attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        let routePolyline = null;
+        let stopMarkers = [];
+        const infoElement = document.getElementById("routeMapInfo");
+        const infoBaseMessage = infoElement ? infoElement.textContent : "";
+
+        function clearCurrentRoute() {
+          if (routePolyline) {
+            map.removeLayer(routePolyline);
+            routePolyline = null;
+          }
+          stopMarkers.forEach(marker => map.removeLayer(marker));
+          stopMarkers = [];
+        }
+
+        function loadRoute(routeId) {
+          const route = routesData[routeId];
+          if (!route) {
+            return;
+          }
+
+          clearCurrentRoute();
+
+          routePolyline = L.polyline(route.path, {
+            color: "#2f9c5c",
+            weight: 5,
+            opacity: 0.9,
+            lineJoin: "round"
+          }).addTo(map);
+
+          stopMarkers = route.stops.map(stop => {
+            return L.circleMarker(stop.coords, {
+              radius: 6,
+              fillColor: "#155f9c",
+              color: "#ffffff",
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.9
+            })
+              .addTo(map)
+              .bindPopup(`<strong>${stop.name}</strong><br>${stop.description}`);
+          });
+
+          const bounds = routePolyline.getBounds();
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [24, 24] });
+          } else {
+            map.setView(route.path[0], 13);
+          }
+
+          if (infoElement) {
+            infoElement.textContent = `${infoBaseMessage} Rota ativa: ${route.label} — ${route.description}. ${route.stops.length} paradas georreferenciadas.`;
+          }
+        }
+
+        const activeButton = document.querySelector("#lineTabs .nav-link.active[data-route]");
+        const initialRouteId = activeButton ? activeButton.dataset.route : "linha410";
+        loadRoute(initialRouteId);
+
+        document.querySelectorAll("#lineTabs .nav-link[data-route]").forEach(button => {
+          button.addEventListener("shown.bs.tab", event => {
+            const { route } = event.target.dataset;
+            loadRoute(route);
+          });
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", initRouteMap);
+    </script>
+  </body>
+</html>

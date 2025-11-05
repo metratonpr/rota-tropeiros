@@ -1,0 +1,28 @@
+<nav class="navbar navbar-expand-lg py-3 shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-semibold text-uppercase" href="{% url 'rota:index' %}">
+            Viação <span>Metropolitana</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir navegação">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav gap-lg-4">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" 
+                       aria-current="page" href="{% url 'rota:index' %}#horarios">Horários</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'rota:index' %}#servicos">Serviços</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'rota:index' %}#rota">Mapa da Rota</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'rota:index' %}#contato">Contato</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
