@@ -15,12 +15,16 @@
   function initRouteMap() {
     const mapElement = document.getElementById('routeMap');
     if (!mapElement) {
-      console.warn('Elemento #routeMap não encontrado.');
+      console.error('Elemento #routeMap não encontrado!');
       return;
     }
 
+    console.log('Elemento #routeMap encontrado, iniciando mapa...');
+    console.log('Dimensões do elemento:', mapElement.offsetWidth, 'x', mapElement.offsetHeight);
+
     // Dados das rotas - em produção, buscar do backend via API
     const routesData = window.ROUTES_DATA || getDefaultRoutesData();
+    console.log('Dados das rotas carregados:', Object.keys(routesData));
 
     // Inicializa o mapa centralizado em Castro-PR
     const map = L.map('routeMap', {
@@ -31,11 +35,21 @@
       maxZoom: 18
     });
 
+    console.log('Mapa Leaflet criado com sucesso');
+
     // Adiciona camada de tiles do OpenStreetMap (gratuito)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    console.log('Tiles do OpenStreetMap adicionados');
+
+    // Force o mapa a recalcular seu tamanho após renderização
+    setTimeout(() => {
+      map.invalidateSize();
+      console.log('Tamanho do mapa invalidado/recalculado');
+    }, 100);
 
     let routePolyline = null;
     let stopMarkers = [];
