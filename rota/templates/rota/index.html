@@ -5,6 +5,82 @@
 
 {% block description %}Transporte público em Castro-PR. Consulte horários, rotas urbanas e intermunicipais, mapa interativo e informações das paradas.{% endblock %}
 
+{% block keywords %}ônibus castro pr, transporte público castro paraná, horários ônibus castro, rotas urbanas castro, viação castro, mapa ônibus castro, linhas de ônibus castro pr, transporte coletivo castro{% endblock %}
+
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TransitSystem",
+  "name": "Viação Rota dos Tropeiros",
+  "description": "Sistema de transporte público de Castro-PR com rotas urbanas e intermunicipais",
+  "url": "{{ request.build_absolute_uri }}",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Castro",
+    "addressRegion": "PR",
+    "addressCountry": "BR"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "-24.7911",
+    "longitude": "-50.0119"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+55-42-3542-1234",
+    "contactType": "customer service",
+    "areaServed": "BR-PR",
+    "availableLanguage": ["Portuguese"]
+  },
+  "sameAs": [
+    "https://www.facebook.com/viacaorota",
+    "https://www.instagram.com/viacaorota"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Viação Rota dos Tropeiros",
+  "url": "{{ request.build_absolute_uri }}",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "{{ request.scheme }}://{{ request.get_host }}/busca?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Viação Rota dos Tropeiros",
+  "alternateName": "Rota dos Tropeiros",
+  "url": "{{ request.build_absolute_uri }}",
+  "logo": "{{ request.scheme }}://{{ request.get_host }}{% static 'rota/img/logo.png' %}",
+  "description": "Empresa de transporte público de Castro-PR oferecendo serviços de qualidade em rotas urbanas e intermunicipais",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Centro",
+    "addressLocality": "Castro",
+    "addressRegion": "PR",
+    "postalCode": "84165-000",
+    "addressCountry": "BR"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": "-24.7911",
+    "longitude": "-50.0119"
+  },
+  "telephone": "+55-42-3542-1234",
+  "priceRange": "$$",
+  "openingHours": "Mo-Sa 05:00-23:00, Su 06:00-22:00"
+}
+</script>
+{% endblock %}
+
 {% block leaflet_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css?v=2" crossorigin="">
 {% endblock %}

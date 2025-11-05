@@ -1,0 +1,19 @@
+# Viação Rota dos Tropeiros - Robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /static/admin/
+
+# Crawl-delay para bots
+Crawl-delay: 1
+
+# Google
+User-agent: Googlebot
+Allow: /
+
+# Bing
+User-agent: Bingbot
+Allow: /
+
+# Sitemap
+Sitemap: {{ request.scheme }}://{{ request.get_host }}/sitemap.xml
